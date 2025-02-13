@@ -1,0 +1,36 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build Docker Image",
+      "type": "shell",
+      "command": "docker build -t student_service .",
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "Run Docker Container (Debug Mode)",
+      "type": "shell",
+      "command": "docker run -d --rm -p 3000:3000 -p 9229:9229 --name student_service student_service",
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "dependsOn": ["Build Docker Image"]
+    },
+    {
+      "label": "Stop Docker Container",
+      "type": "shell",
+      "command": "docker stop student_service",
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      }
+    }
+  ]
+}

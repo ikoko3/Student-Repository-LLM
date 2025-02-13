@@ -1,0 +1,21 @@
+{
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "files.exclude": {
+      "node_modules/": true,
+      "dist/": true,
+      ".env": true
+    },
+    "terminal.integrated.env.linux": {
+      "NODE_ENV": "development"
+    },
+    "terminal.integrated.env.windows": {
+      "NODE_ENV": "development"
+    },
+    "eslint.validate": ["javascript", "javascriptreact", "typescript"],
+    "eslint.options": {
+      "extensions": [".js", ".ts"]
+    },
+    "debug.node.autoAttach": "on"
+  }
+  
