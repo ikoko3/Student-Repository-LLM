@@ -12,10 +12,10 @@ jobs:
     - uses: actions/checkout@v2
     - name: Build docker
       run: |
-        docker build . -t $BACKEND_IMAGE_NAME/$IMAGE_NAME
+        docker build . -t $REPO_NAME/$BACKEND_IMAGE_NAME
     - name: run docker
       run: |
-        docker run -d -p 3000:3000 $BACKEND_IMAGE_NAME/$IMAGE_NAME:latest && \
+        docker run -d -p 3000:3000 $REPO_NAME/$BACKEND_IMAGE_NAME:latest && \
           docker ps && sleep 5
 
     - name: "Check files existence"
