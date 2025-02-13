@@ -18,12 +18,25 @@ jobs:
         docker run -d -p 3000:3000 $REPO_NAME/$BACKEND_IMAGE_NAME:latest && \
           docker ps && sleep 5
 
+    - name: Build Student interface docker
+      run: |
+        docker build student_interface -t $REPO_NAME/$FRONTEND_IMAGE_NAME
+    - name: run Student Service docker
+      run: |
+        docker run -d -p 5173:5173 $REPO_NAME/$FRONTEND_IMAGE_NAME:latest && \
+          docker ps && sleep 5
+
+
     - name: Login to Container Registry
       uses: docker/login-action@v1
       with:
         username: ${{ secrets.REGISTRY_USERNAME }}
         password: ${{ secrets.REGISTRY_PASSWORD }}
 
-    - name: Push image to docker hub Container Registry
+    - name: Push backend image to docker hub Container Registry
       run: | 
           docker push $REPO_NAME/$BACKEND_IMAGE_NAME
+
+    - name: Push frontend image to docker hub Container Registry
+      run: | 
+          docker push $REPO_NAME/$FRONTEND_IMAGE_NAME
