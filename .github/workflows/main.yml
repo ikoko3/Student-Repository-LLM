@@ -10,10 +10,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - name: Build docker
+    - name: Build Student Service docker
       run: |
-        docker build . -t $REPO_NAME/$BACKEND_IMAGE_NAME
-    - name: run docker
+        docker build student_service -t $REPO_NAME/$BACKEND_IMAGE_NAME
+    - name: run Student Service docker
       run: |
         docker run -d -p 3000:3000 $REPO_NAME/$BACKEND_IMAGE_NAME:latest && \
           docker ps && sleep 5
