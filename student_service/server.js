@@ -1,6 +1,21 @@
 const express = require('express')
+const cors = require("cors")
+
 const app = express()
 const port = 3000
+
+// Allow all origins (not recommended for production)
+app.use(cors());
+
+// // OR allow specific origins (safer)
+// app.use(
+//   cors({
+//     origin: "http://localhost:5173", // Replace with the frontend URL
+//     methods: ["GET", "POST", "PUT", "DELETE"], // Allowed HTTP methods
+//     allowedHeaders: ["Content-Type", "Authorization"], // Allowed headers
+//   })
+// );
+
 
 app.get('/', (req, res) => {
   res.send('Hello World!')
@@ -24,6 +39,14 @@ app.get("/test-debug", (req, res) => {
   const result = addNumbers(5, 10); // Function call for debugging
 
   res.json({ message: "Debugging!", sum: result });
+});
+
+// Express route to test debugging
+app.get("/test-value", (req, res) => {
+
+  var x = 5;
+
+  res.json({ message: "This is a message from the other docker!", x });
 });
 
 

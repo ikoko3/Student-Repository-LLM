@@ -1,18 +1,17 @@
 {
-    "folders": [
-      {
-        "path": "student_service"
-      },
-      {
-        "path": "frontend"
-      },
-      {
-        "path": "mongo"
-      }
-    ],
-    "settings": {
-      "editor.tabSize": 2,
-      "terminal.integrated.cwd": "student_service"
+  "folders": [
+    {
+      "path": "student_service"
+    },
+    {
+      "path": "student_interface"
+    },
+    {
+      "path": "mongo"
     }
+  ],
+  "settings": {
+    "editor.tabSize": 2,
+    "terminal.integrated.cwd": "student_service"
   }
-  
+}
