@@ -1,31 +1,81 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: my-app
+---
+# Backend Deployment (Express.js)
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: student_service
+  name: backend
+  namespace: my-app
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: student_service
+      app: backend
   template:
     metadata:
       labels:
-        app: student_service
+        app: backend
     spec:
       containers:
-        - name: sudent_service
-          image: student_service:latest  # Replace with your actual Docker image
+        - name: backend
+          image: ikoko3/student_details_service:latest
           ports:
-            - containerPort: 3000  # App Port
-            - containerPort: 9229  # Debugging Port (Node.js Inspector)
-          env:
-            - name: NODE_ENV
-              value: "development"
-          command: ["node", "--inspect=0.0.0.0:9229", "server.js"]  # Enable debugging
-          resources:
-            requests:   # Minimum resources required
-              memory: "128Mi"
-              cpu: "250m"
-            limits:     # Maximum resources allowed
-              memory: "512Mi"
-              cpu: "500m"
+            - containerPort: 3000
+
+---
+# Backend Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: my-app
+spec:
+  selector:
+    app: backend
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
+  type: NodePort
+
+---
+# Frontend Deployment (Vue.js)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: my-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: ikoko3/student_interface:latest
+          ports:
+            - containerPort: 5176
+
+---
+# Frontend Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: my-app
+spec:
+  selector:
+    app: frontend
+  ports:
+    - protocol: TCP
+      port: 5176
+      targetPort: 5176
+  type: NodePort
