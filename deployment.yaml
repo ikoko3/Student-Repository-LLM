@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: student_service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: student_service
+  template:
+    metadata:
+      labels:
+        app: student_service
+    spec:
+      containers:
+        - name: sudent_service
+          image: student_service:latest  # Replace with your actual Docker image
+          ports:
+            - containerPort: 3000  # App Port
+            - containerPort: 9229  # Debugging Port (Node.js Inspector)
+          env:
+            - name: NODE_ENV
+              value: "development"
+          command: ["node", "--inspect=0.0.0.0:9229", "server.js"]  # Enable debugging
+          resources:
+            requests:   # Minimum resources required
+              memory: "128Mi"
+              cpu: "250m"
+            limits:     # Maximum resources allowed
+              memory: "512Mi"
+              cpu: "500m"

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: student_service-app
+spec:
+  selector:
+    app: student_service
+  ports:
+    - protocol: TCP
+      port: 3000      # External Port
+      targetPort: 3000  # App Port in Container
+    - protocol: TCP
+      port: 9229      # Debugging Port (VS Code)
+      targetPort: 9229
+  type: NodePort
