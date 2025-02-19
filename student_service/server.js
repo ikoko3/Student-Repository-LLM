@@ -4,8 +4,16 @@ const cors = require("cors")
 const app = express()
 const port = 3000
 
-// Allow all origins (not recommended for production)
+const bodyParser = require("body-parser");
+const gradeRoutes = require("./routes/gradeRoutes");
+
+// Middleware
 app.use(cors());
+app.use(bodyParser.json());
+
+// Routes
+app.use("/api", gradeRoutes);
+
 
 // // OR allow specific origins (safer)
 // app.use(
@@ -24,6 +32,9 @@ app.get('/', (req, res) => {
 app.get("/", (req, res) => {
   res.send("Debugging Express with Docker in VS Code!");
 });
+
+// Routes
+app.use("/api", gradeRoutes);
 
 // Sample function to test debugging
 function addNumbers(a, b) {
