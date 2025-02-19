@@ -4,6 +4,8 @@ COPY package.json /app
 RUN npm install
 COPY . /app
 
+RUN node swagger.js
+
 # Expose both the app port and the Node.js debugger port
 EXPOSE 3000 9229  
 
