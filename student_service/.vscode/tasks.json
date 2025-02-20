@@ -20,12 +20,22 @@
         "kind": "build",
         "isDefault": false
       },
-      "dependsOn": ["Build Docker Image"]
+      "dependsOn": ["Build Docker Image", "Remove Docker Container"]
     },
     {
       "label": "Stop Docker Container",
       "type": "shell",
       "command": "docker stop student_service",
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      }
+    },
+    {
+      "label": "Remove Docker Container",
+      "type": "shell",
+      "command": "docker rm -f student_service",
       "problemMatcher": [],
       "group": {
         "kind": "build",

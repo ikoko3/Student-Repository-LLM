@@ -4,6 +4,7 @@ const {
   DynamoDBDocumentClient,
   PutCommand,
   GetCommand,
+  QueryCommand,
 } = require("@aws-sdk/lib-dynamodb");
 
 // Initialize DynamoDB Client
@@ -60,4 +61,21 @@ async function getRecord(tableName, id) {
   }
 }
 
-module.exports = { addRecord, getRecord };
+/**
+ * Get a record from the DynamoDB table
+ * @param {string} tableName - The table name
+ * @param {string} id - record id
+ */
+async function getRecordsByQuery(params) {
+  try {
+    const command = new QueryCommand(params);
+
+    const records = await dynamo.send(command);
+    return { success: true, records };
+  } catch (error) {
+    console.error("DynamoDB Error:", error);
+    return { success: false, message: "Failed to get records" };
+  }
+}
+
+module.exports = { addRecord, getRecord, getRecordsByQuery };

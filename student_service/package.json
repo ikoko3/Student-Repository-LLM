@@ -9,7 +9,8 @@
     "@aws-sdk/lib-dynamodb": "^3.400.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
-    "swagger-autogen": "^2.23.7"
+    "swagger-autogen": "^2.23.7",
+    "uuid": "11.1.0"
   },
   "scripts": {
     "swagger": "node swagger.js",

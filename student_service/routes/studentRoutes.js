@@ -6,7 +6,7 @@ const TABLE_NAME = "Students"; // Change this to your actual table name
 
 module.exports = router;
 
-router.post("/add", async (req, res) => {
+router.post("/upsert", async (req, res) => {
   try {
     const { id, email } = req.body;
 
