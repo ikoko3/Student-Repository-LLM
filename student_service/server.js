@@ -5,13 +5,13 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 const bodyParser = require("body-parser");
-const gradeRoutes = require("./routes/gradeRoutes");
+const studentRoutes = require("./routes/studentRoutes");
+const chatRoutes = require("./routes/chatRoutes");
 
 const swaggerUi = require("swagger-ui-express");
 const swaggerDocument = require("./swagger-output.json");
 const dotenv = require("dotenv");
 const setupSwagger = require("./swaggerConfig");
-const protectedRoutes = require("./routes/protectedRoutes");
 
 dotenv.config();
 setupSwagger(app);
@@ -24,7 +24,8 @@ app.use(bodyParser.json());
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // Routes
-app.use("/api", gradeRoutes);
+app.use("/api/students", studentRoutes);
+app.use("/api/chat", chatRoutes);
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
