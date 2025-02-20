@@ -1,4 +1,5 @@
 const express = require("express");
+const { authenticateToken } = require("../middleware/authMiddleware");
 const { addRecord, getRecord } = require("../services/dynamoDBService");
 
 const router = express.Router();
@@ -27,7 +28,7 @@ router.post("/upsert", async (req, res) => {
   }
 });
 
-router.get("/:id", async (req, res) => {
+router.get("/:id", authenticateToken, async (req, res) => {
   try {
     const id = req.params.id;
 
