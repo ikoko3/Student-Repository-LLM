@@ -1,34 +1,37 @@
 const express = require("express");
 const cors = require("cors");
 
+//Environment Setup
+const dotenv = require("dotenv");
+dotenv.config({ path: ".env" });
+dotenv.config({ path: ".env.local" });
+
+//Express Server
 const app = express();
-const port = process.env.PORT || 3000;
-
 const bodyParser = require("body-parser");
-const studentRoutes = require("./routes/studentRoutes");
-const gradeRoutes = require("./routes/gradeRoutes");
-const chatRoutes = require("./routes/chatRoutes");
 
+//Swagger
 const swaggerUi = require("swagger-ui-express");
 const swaggerDocument = require("./swagger-output.json");
-const dotenv = require("dotenv");
 const setupSwagger = require("./swaggerConfig");
-
-dotenv.config();
 setupSwagger(app);
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // Middleware
 app.use(cors());
 app.use(bodyParser.json());
 
-// Serve Swagger Docs
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-
 // Routes
+const studentRoutes = require("./routes/studentRoutes");
+const gradeRoutes = require("./routes/gradeRoutes");
+const chatRoutes = require("./routes/chatRoutes");
+
 app.use("/api/students", studentRoutes);
 app.use("/api/grades", gradeRoutes);
 app.use("/api/chat", chatRoutes);
 
+//Server startup
+const port = process.env.PORT || 3000;
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
+  console.log(`App listening on port ${port}`);
 });

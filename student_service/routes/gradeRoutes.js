@@ -25,7 +25,7 @@ router.post("/upsert", async (req, res) => {
     };
 
     const result = await addRecord(TABLE_NAME, grade);
-    res.json(result);
+    res.json(result.record);
   } catch (error) {
     res.status(500).json({ error: "Failed to add student grades" });
   }
@@ -44,7 +44,7 @@ router.get("/student/:studentId", async (req, res) => {
     };
 
     const result = await getRecordsByQuery(params);
-    res.json(result);
+    res.json(result.records);
   } catch (error) {
     res.status(500).json({ error: "Failed to get student record" });
   }
