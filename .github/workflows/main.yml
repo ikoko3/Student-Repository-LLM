@@ -27,3 +27,22 @@ jobs:
     - name: Push backend image to docker hub Container Registry
       run: | 
           docker push $REPO_NAME/$BACKEND_IMAGE_NAME
+
+    - name: Set up AWS CLI
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
+
+    - name: Install Elastic Beanstalk CLI
+      run: |
+        pip install awsebcli --upgrade
+
+    - name: Initialize Elastic Beanstalk (If Not Already Initialized)
+      run: |
+        eb init ${{ secrets.EB_APPLICATION_NAME }} --platform docker --region ${{ secrets.AWS_REGION }}
+
+    - name: Deploy to Elastic Beanstalk
+      run: |
+        eb deploy ${{ secrets.EB_ENVIRONMENT_NAME }}
