@@ -21,6 +21,7 @@ router.post("/upsert", async (req, res) => {
       gradeId: uuidv4(), //auto generate
       courseName,
       courseGrade,
+      gradeDescription,
       timestamp: new Date().toISOString(),
     };
 
