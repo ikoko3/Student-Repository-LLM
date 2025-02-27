@@ -26,6 +26,7 @@ router.post("/upsert", async (req, res) => {
     };
 
     const result = await addRecord(TABLE_NAME, grade);
+    
     res.json(result.record);
   } catch (error) {
     res.status(500).json({ error: "Failed to add student grades" });

@@ -10,24 +10,27 @@ const openai = new OpenAI({
 });
 
 const knowledgeAreas = {
+  Unknown: "Unknown",
   Students: "Students",
   Grades: "Grades",
-  Unknown: "Unknown",
 };
 
 async function getKnowledgeAreas(studentPrompt) {
   try {
-    //return ["Grades"];
     const kas = fs.readFileSync(knowledgeAreasFile, "utf8");
 
-    const prompt = `A student provided this prompt:--${studentPrompt}--,
-    I have these knowledge areas (in csv format): ${kas}.
-    Match semanticly the user prompt with the templates and respond with the most relevant tables (comma separated values) or with Unknown.`;
+    const prompt = `
+    Given the student's question '${studentPrompt}' and the CSV file with knowledge areas, match the question with the relevant knowledge areas. 
+    Return ONLY the values from the knowledge area column, and for questions that match multiple knowledge areas, return all the corresponding names in a comma-separated list.
+    \`\`\` csv
+    ${kas}
+    \`\`\`
+    `;
 
     const response = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
       messages: [{ role: "user", content: prompt }],
-      max_tokens: 50,
+      max_tokens: 250,
     });
 
     return response.choices[0].message.content.split(",");
@@ -39,7 +42,13 @@ async function getKnowledgeAreas(studentPrompt) {
 
 async function respondToPrompt(studentPrompt, context) {
   try {
-    const prompt = `A student asked this: -- ${studentPrompt} --. I have this information: -- ${context}--. Reply with the infomration or request clarity.`;
+    const prompt = `A student has asked:
+        '\\${studentPrompt}'\ 
+        Based on the following JSON with contains the student's information, return the answer to their question as if you are talking to the student without specifying the source of information.
+        If the question cannot be answered using the JSON, request more clarity.
+        \`\`\`json
+        ${JSON.stringify(context)}
+        \`\`\`}`;
 
     const response = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
@@ -54,4 +63,4 @@ async function respondToPrompt(studentPrompt, context) {
   }
 }
 
-module.exports = { respondToPrompt, getKnowledgeAreas };
+module.exports = { respondToPrompt, getKnowledgeAreas, knowledgeAreas };
