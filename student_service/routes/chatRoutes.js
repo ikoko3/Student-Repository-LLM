@@ -4,7 +4,12 @@ const {
   getKnowledgeAreas,
   knowledgeAreas,
 } = require("../services/openaiservice");
-const { getRecord, getRecordsByQuery } = require("../services/dynamoDBService");
+const {
+  getRecord,
+  getRecordsByQuery,
+  getSTokensRecord,
+  addRecord,
+} = require("../services/dynamoDBService");
 
 const router = express.Router();
 
@@ -12,15 +17,36 @@ module.exports = router;
 
 router.post("/prompt", async (req, res) => {
   try {
-    const { prompt } = req.body;
-    const studentId = "S123"; // We should be able to get this id from the jwt token
+    const { prompt, studentId } = req.body;
+    const dailyMaxTokens = 3500; // We will create the logic at a next step
 
-    const kas = await getKnowledgeAreas(prompt);
+    const student_tokens = await getSTokensRecord(
+      "StudentTokens", // Create constant
+      studentId,
+      getFormattedDate()
+    );
+
+    if (
+      student_tokens != undefined &&
+      student_tokens.tokens_spent >= dailyMaxTokens
+    ) {
+      res.json({
+        response: "You have exceeded your daily quota, try again tomorrow",
+      });
+      return res;
+    }
+
+    const kas_response = await getKnowledgeAreas(prompt);
+    var tokens_spent = kas_response.tokens_spent;
+
+    const kas = kas_response.response;
     if (kas.length == 1 && kas[0] == knowledgeAreas.Unknown) {
       res.json({
         response:
           "I couldn't understand what information I need to retrieve. Please redefine your question",
       });
+
+      await saveStudentTokens(student_tokens, tokens_spent, studentId);
       return res;
     }
 
@@ -51,10 +77,37 @@ router.post("/prompt", async (req, res) => {
       }
     }
 
-    const response = await respondToPrompt(prompt, context);
+    const prompt_response = await respondToPrompt(prompt, context);
 
-    res.json({ response });
+    tokens_spent += prompt_response.tokens_spent;
+    await saveStudentTokens(student_tokens, tokens_spent, studentId);
+
+    res.json({ response: prompt_response.response });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
+
+//Should be moved to a generic library file
+function getFormattedDate() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0"); // Months are 0-based
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}${month}${day}`;
+}
+
+async function saveStudentTokens(student_tokens, tokens_spent, studentId) {
+  var st_to_update = student_tokens;
+  if (student_tokens == undefined) {
+    st_to_update = {
+      studentId,
+      tokens_spent,
+      Date: getFormattedDate(),
+    };
+  } else {
+    st_to_update.tokens_spent += tokens_spent;
+  }
+
+  const result = await addRecord("StudentTokens", st_to_update);
+}

@@ -78,4 +78,23 @@ async function getRecordsByQuery(params) {
   }
 }
 
-module.exports = { addRecord, getRecord, getRecordsByQuery };
+//This could be abstracted and then be moved to a different service
+async function getSTokensRecord(tableName, partitionKey, sortKey) {
+  const params = {
+    TableName: tableName,
+    Key: {
+      studentId: partitionKey,
+      Date: sortKey,
+    },
+  };
+
+  try {
+    const command = new GetCommand(params);
+    const response = await dynamo.send(command);
+    return response.Item;
+  } catch (error) {
+    console.error("Error fetching item:", error);
+  }
+}
+
+module.exports = { addRecord, getRecord, getRecordsByQuery, getSTokensRecord };

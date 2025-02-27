@@ -17,6 +17,12 @@ const knowledgeAreas = {
 
 async function getKnowledgeAreas(studentPrompt) {
   try {
+    //MOCK Response
+    return {
+      response: "Grades,Students".split(","),
+      tokens_spent: 106,
+    };
+
     const kas = fs.readFileSync(knowledgeAreasFile, "utf8");
 
     const prompt = `
@@ -33,7 +39,10 @@ async function getKnowledgeAreas(studentPrompt) {
       max_tokens: 250,
     });
 
-    return response.choices[0].message.content.split(",");
+    return {
+      response: response.choices[0].message.content.split(","),
+      tokens_spent: response.usage.total_tokens,
+    };
   } catch (error) {
     console.error("OpenAI Error:", error);
     throw new Error("Failed to generate feedback.");
@@ -56,7 +65,10 @@ async function respondToPrompt(studentPrompt, context) {
       max_tokens: 50,
     });
 
-    return response.choices[0].message.content;
+    return {
+      response: response.choices[0].message.content,
+      tokens_spent: response.usage.total_tokens,
+    };
   } catch (error) {
     console.error("OpenAI Error:", error);
     throw new Error("Failed to generate feedback.");
