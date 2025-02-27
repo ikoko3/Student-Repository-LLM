@@ -35,13 +35,12 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ secrets.AWS_REGION }}
 
+    - name: Generate Deployment Package
+      run: zip -r student_service-${{ github.run_number }}.zip student_service -x "student_service/.git/*"
+
     - name: Upload ZIP to S3
       run: |
         aws s3 cp student_service-${{ github.run_number }}.zip s3://elasticbeanstalk-eu-central-1-677276075513/
-
-
-    - name: Generate Deployment Package
-      run: zip -r student_service.zip student_service -x "student_service/.git/*"
 
     - name: Upload to Elastic Beanstalk
       run: |
