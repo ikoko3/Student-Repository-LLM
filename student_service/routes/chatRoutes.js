@@ -1,21 +1,26 @@
 const express = require("express");
-const { generateGradeFeedback } = require("../services/openaiservice");
+const {
+  respondToPrompt,
+  getKnowledgeAreas,
+} = require("../services/openaiservice");
 
 const router = express.Router();
 
-
-
 module.exports = router;
 
-router.post("/grade-feedback", async (req, res) => {
+router.post("/prompt", async (req, res) => {
   try {
-    const { studentName, subject, score } = req.body;
-    if (!studentName || !subject || score === undefined) {
-      return res.status(400).json({ error: "Missing required fields" });
-    }
+    const { prompt } = req.body;
 
-    const feedback = await generateGradeFeedback(studentName, subject, score);
-    res.json({ feedback });
+    const kas = await getKnowledgeAreas(prompt);
+
+    // Get context based on knowledge areas
+
+    const context = "{'Physics Grade':8}";
+
+    const response = await respondToPrompt(prompt, context);
+
+    res.json({ response });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
