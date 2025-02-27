@@ -34,3 +34,17 @@ jobs:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ secrets.AWS_REGION }}
+
+    - name: Generate Deployment Package
+      run: zip -r student_service.zip student_service -x "student_service/.git/*"
+
+    - name: Upload to Elastic Beanstalk
+      run: |
+        aws elasticbeanstalk create-application-version \
+          --application-name "StudentService" \
+          --version-label "v-${{ github.run_number }}" \
+          --source-bundle S3Bucket="elasticbeanstalk-eu-central-1-677276075513",S3Key="student_service-${{ github.run_number }}.zip"
+
+        aws elasticbeanstalk update-environment \
+          --environment-name "StudentService-env" \
+          --version-label "v-${{ github.run_number }}"
