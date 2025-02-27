@@ -9,7 +9,7 @@ module.exports = router;
 
 router.post("/upsert", async (req, res) => {
   try {
-    const { id, email } = req.body;
+    const { id, first_name, last_name, email } = req.body;
 
     if (!id || !email) {
       return res.status(400).json({ error: "Missing required fields" });
@@ -17,6 +17,8 @@ router.post("/upsert", async (req, res) => {
 
     const student = {
       studentId: id, // Primary Key
+      first_name,
+      last_name,
       email,
       timestamp: new Date().toISOString(),
     };
