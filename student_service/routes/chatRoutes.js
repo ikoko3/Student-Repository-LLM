@@ -14,17 +14,27 @@ const {
 const router = express.Router();
 
 module.exports = router;
+const dailyMaxTokens = 3500; // We will create the logic at a next step
+
+router.get("/available_tokens/:id", async (req, res) => {
+  try {
+    const studentId = req.params.id;
+    var spent_tokens = 0;
+
+    const student_tokens = await getStudentTokens(studentId);
+    if (student_tokens != undefined) spent_tokens = student_tokens.tokens_spent;
+
+    res.json(dailyMaxTokens - spent_tokens);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to get student record" });
+  }
+});
 
 router.post("/prompt", async (req, res) => {
   try {
     const { prompt, studentId } = req.body;
-    const dailyMaxTokens = 3500; // We will create the logic at a next step
 
-    const student_tokens = await getSTokensRecord(
-      "StudentTokens", // Create constant
-      studentId,
-      getFormattedDate()
-    );
+    const student_tokens = await getStudentTokens(studentId);
 
     if (
       student_tokens != undefined &&
@@ -46,7 +56,7 @@ router.post("/prompt", async (req, res) => {
           "I couldn't understand what information I need to retrieve. Please redefine your question",
       });
 
-      await saveStudentTokens(student_tokens, tokens_spent, studentId);
+      await saveStudentTokens(studentId, student_tokens, tokens_spent);
       return res;
     }
 
@@ -80,7 +90,7 @@ router.post("/prompt", async (req, res) => {
     const prompt_response = await respondToPrompt(prompt, context);
 
     tokens_spent += prompt_response.tokens_spent;
-    await saveStudentTokens(student_tokens, tokens_spent, studentId);
+    await saveStudentTokens(studentId, student_tokens, tokens_spent);
 
     res.json({ response: prompt_response.response });
   } catch (error) {
@@ -97,7 +107,7 @@ function getFormattedDate() {
   return `${year}${month}${day}`;
 }
 
-async function saveStudentTokens(student_tokens, tokens_spent, studentId) {
+async function saveStudentTokens(studentId, student_tokens, tokens_spent) {
   var st_to_update = student_tokens;
   if (student_tokens == undefined) {
     st_to_update = {
@@ -110,4 +120,12 @@ async function saveStudentTokens(student_tokens, tokens_spent, studentId) {
   }
 
   const result = await addRecord("StudentTokens", st_to_update);
+}
+
+async function getStudentTokens(studentId) {
+  return await getSTokensRecord(
+    "StudentTokens", // Create constant
+    studentId,
+    getFormattedDate()
+  );
 }
