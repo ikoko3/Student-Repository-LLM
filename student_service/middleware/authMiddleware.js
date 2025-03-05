@@ -50,4 +50,28 @@ async function authenticateToken(req, res, next) {
   });
 }
 
-module.exports = { authenticateToken };
+function authorizeUser(validKeys = ["id", "studentId", "userId"]) {
+  return (req, res, next) => {
+    const userId = req.user?.["cognito:username"];
+
+    // Look for the correct ID in params, query, or body
+    let paramId = null;
+
+    for (const key of validKeys) {
+      if (req.params[key]) paramId = req.params[key];
+      if (req.query[key]) paramId = req.query[key];
+      if (req.body[key]) paramId = req.body[key];
+      if (paramId) break; // Stop searching once we find the first match
+    }
+
+    if (!userId || userId !== paramId) {
+      return res
+        .status(403)
+        .json({ message: "Unauthorized to access this resource." });
+    }
+
+    next(); // Proceed if authorized
+  };
+}
+
+module.exports = { authenticateToken, authorizeUser };
