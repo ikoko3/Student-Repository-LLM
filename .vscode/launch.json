@@ -8,7 +8,7 @@
       "port": 9229,
       "restart": true,
       "address": "localhost",
-      "localRoot": "${workspaceFolder}",
+      "localRoot": "${workspaceFolder}/student_service",
       "remoteRoot": "/app",
       "preLaunchTask": "Run Docker Container (Debug Mode)"
     }
