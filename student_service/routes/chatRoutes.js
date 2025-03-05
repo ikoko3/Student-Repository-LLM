@@ -9,12 +9,89 @@ const {
   getRecordsByQuery,
   getSTokensRecord,
   addRecord,
+  getTableItemCount,
+  getAmountSumBySortKey,
 } = require("../services/dynamoDBService");
+const {
+  getRemainingDaysInMonth,
+  isFirstDayOfMonth,
+  getFormattedDate,
+} = require("../dateUtils");
 
 const router = express.Router();
 
 module.exports = router;
 const dailyMaxTokens = 3500; // We will create the logic at a next step
+
+//We can set a cache for these value, instead of registering them simply as a variables.
+let existing_user_quota = null;
+let new_user_quota = null;
+
+//This could have been a lambda function
+//We can set it up independently if time allows for it
+router.post("/calculate_daily_tokens", async (req, res) => {
+  try {
+    const date = getFormattedDate();
+
+    const existing_result = await getRecord("DailyTokenQuotas", date, "date");
+
+    //This will prevent the same calculation from running more than once in a day
+    if (existing_result.Item != null) {
+      return res.status(204);
+    }
+
+    let remaining_tokens = 0;
+    if (isFirstDayOfMonth()) {
+      //Set the budget. Ideally this could be dynamically set, not a constant in the code
+      remaining_tokens = 5000000;
+    } else {
+      const yestrday = getFormattedDate(-1);
+      const spent_tokens = await getAmountSumBySortKey(
+        "StudentTokens",
+        "Date-index",
+        yestrday
+      );
+
+      const yesterdays_quotas = await getRecord(
+        "DailyTokenQuotas",
+        yestrday,
+        "date"
+      );
+
+      const yesterday_starting_tokens =
+        yesterdays_quotas.record.Item.starting_tokens;
+      remaining_tokens = yesterday_starting_tokens - spent_tokens;
+    }
+
+    //Count users
+    const users = await getTableItemCount("Students");
+    const remaining_days_in_month = getRemainingDaysInMonth();
+    const total_daily_tokens = remaining_tokens / remaining_days_in_month;
+
+    //We reserve the 10% of the daily tokens for newly registered users
+    //We consider that the maximum daily users can't be more than 10%
+    const existing_users_quota = (total_daily_tokens * 0.9) / users;
+    const new_users_quota = (total_daily_tokens * 0.1) / (users / 10);
+
+    //Save record to the database
+    var daily_quota = {
+      date,
+      existing_users_quota,
+      new_users_quota,
+      users_count: users,
+      starting_tokens: remaining_tokens,
+    };
+
+    const result = await addRecord("DailyTokenQuotas", daily_quota);
+
+    existing_user_quota = existing_users_quota;
+    new_user_quota = new_users_quota;
+
+    res.json();
+  } catch (error) {
+    res.status(500).json({ error: "Failed to set daily count" });
+  }
+});
 
 router.get("/available_tokens/:id", async (req, res) => {
   try {
@@ -98,15 +175,6 @@ router.post("/prompt", async (req, res) => {
   }
 });
 
-//Should be moved to a generic library file
-function getFormattedDate() {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, "0"); // Months are 0-based
-  const day = String(now.getDate()).padStart(2, "0");
-  return `${year}${month}${day}`;
-}
-
 async function saveStudentTokens(studentId, student_tokens, tokens_spent) {
   var st_to_update = student_tokens;
   if (student_tokens == undefined) {
@@ -128,4 +196,14 @@ async function getStudentTokens(studentId) {
     studentId,
     getFormattedDate()
   );
+}
+
+async function getDailyMaxTokens(studentId) {
+  //TODO: Write a function that detects if the user was registered today
+  //Use the correct variable based on the type of the user
+}
+
+//This should be used to reset the in memory values
+async function resetDailyQuotas(studentId) {
+  //TODO: This function shuold read from the db the daily quotas and set the local variables
 }

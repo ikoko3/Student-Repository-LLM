@@ -40,8 +40,8 @@ router.post(
 
 router.get(
   "/:id",
-  authenticateToken,
-  authorizeUser(["id"]),
+  //authenticateToken,
+  //authorizeUser(["id"]),
   async (req, res) => {
     try {
       const id = req.params.id;

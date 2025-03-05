@@ -5,6 +5,7 @@ const {
   PutCommand,
   GetCommand,
   QueryCommand,
+  ScanCommand,
 } = require("@aws-sdk/lib-dynamodb");
 
 // Initialize DynamoDB Client
@@ -43,13 +44,14 @@ async function addRecord(tableName, record) {
  * Get a record from the DynamoDB table
  * @param {string} tableName - The table name
  * @param {string} id - record id
+ * @param {string} idAttribute - the name of the key attribute (e.g., "studentId")
  */
-async function getRecord(tableName, id) {
+async function getRecord(tableName, id, idAttribute = "studentId") {
   try {
     const command = new GetCommand({
       TableName: tableName,
       Key: {
-        studentId: id,
+        [idAttribute]: id, // Dynamically use the idAttribute
       },
     });
 
@@ -57,7 +59,7 @@ async function getRecord(tableName, id) {
     return { success: true, record };
   } catch (error) {
     console.error("DynamoDB Error:", error);
-    return { success: false, message: "Failed to add record" };
+    return { success: false, message: "Failed to get record" };
   }
 }
 
@@ -97,4 +99,65 @@ async function getSTokensRecord(tableName, partitionKey, sortKey) {
   }
 }
 
-module.exports = { addRecord, getRecord, getRecordsByQuery, getSTokensRecord };
+/**
+ * Get the count of items in a DynamoDB table
+ * @param {string} tableName - The table name
+ * @returns {number} - The count of items in the table
+ */
+async function getTableItemCount(tableName) {
+  try {
+    const command = new ScanCommand({
+      TableName: tableName,
+      Select: "COUNT", // This only returns the count of items, not the actual data
+    });
+
+    const result = await dynamo.send(command);
+    return result.Count; // `Count` will contain the number of items
+  } catch (error) {
+    console.error("Error getting item count:", error);
+    return 0; // Return 0 in case of error
+  }
+}
+
+/**
+ * Get the sum of 'amount' for a specific sort key (e.g., 'date')
+ * @param {string} tableName - The table name
+ * @param {string} sortKeyValue - The sort key value (e.g., date)
+ */
+async function getAmountSumBySortKey(tableName, indexName, date) {
+  try {
+    const command = new QueryCommand({
+      TableName: tableName,
+      IndexName: indexName, // GSI name (index on `date`)
+      KeyConditionExpression: "#Date = :Date", // Query by `date`
+      ExpressionAttributeNames: {
+        "#Date": "Date", // The GSI partition key (date)
+      },
+      ExpressionAttributeValues: {
+        ":Date": date, // The date value to query
+      },
+    });
+
+    const data = await dynamo.send(command);
+
+    // Calculate the sum of the 'amount' column
+    const sum = data.Items.reduce((acc, item) => {
+      const value = parseFloat(item.tokens_spent || 0); // Convert string to number
+      return acc + value;
+    }, 0);
+
+    return sum;
+  } catch (error) {
+    console.error("Error getting amount sum:", error);
+    return 0;
+  }
+}
+
+module.exports = {
+  addRecord,
+  getRecord,
+  getRecordsByQuery,
+  getSTokensRecord,
+  getTableItemCount,
+  getAmountSumBySortKey,
+};
