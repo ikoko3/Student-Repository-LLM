@@ -6,7 +6,6 @@ const {
   ScanCommand,
   GetCommand,
   QueryCommand,
-  ScanCommand,
 } = require("@aws-sdk/lib-dynamodb");
 
 // Initialize DynamoDB Client
