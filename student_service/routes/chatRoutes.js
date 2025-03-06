@@ -18,6 +18,10 @@ const {
   isFirstDayOfMonth,
   getFormattedDate,
 } = require("../dateUtils");
+const {
+  authenticateToken,
+  authorizeUser,
+} = require("../middleware/authMiddleware");
 const { TABLES, DYNAMO_DB_INDEXES } = require("../constants");
 
 const router = express.Router();
@@ -92,60 +96,70 @@ router.post("/calculate_daily_tokens", async (req, res) => {
   }
 });
 
-router.get("/available_tokens/:id", async (req, res) => {
-  try {
-    const studentId = req.params.id;
-    var spent_tokens = 0;
+router.get(
+  "/available_tokens/:id",
+  authenticateToken,
+  authorizeUser(["id"]),
+  async (req, res) => {
+    try {
+      const studentId = req.params.id;
+      var spent_tokens = 0;
 
-    const student_tokens = await getStudentTokens(studentId);
-    if (student_tokens != undefined) spent_tokens = student_tokens.tokens_spent;
+      const student_tokens = await getStudentTokens(studentId);
+      if (student_tokens != undefined)
+        spent_tokens = student_tokens.tokens_spent;
 
-    res.json((await getdailyQuota()) - spent_tokens);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to get student record" });
+      res.json((await getdailyQuota()) - spent_tokens);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to get student record" });
+    }
   }
-});
+);
 
-router.post("/prompt", async (req, res) => {
-  try {
-    const { prompt, studentId } = req.body;
+router.post(
+  "/prompt",
+  authenticateToken,
+  authorizeUser(["studentId"]),
+  async (req, res) => {
+    try {
+      const { prompt, studentId } = req.body;
 
-    const student_tokens = await getStudentTokens(studentId);
+      const student_tokens = await getStudentTokens(studentId);
 
-    if (
-      student_tokens != undefined &&
-      student_tokens.tokens_spent >= (await getdailyQuota())
-    ) {
-      res.json({
-        response: "You have exceeded your daily quota, try again tomorrow",
-      });
-      return res;
-    }
+      if (
+        student_tokens != undefined &&
+        student_tokens.tokens_spent >= (await getdailyQuota())
+      ) {
+        res.json({
+          response: "You have exceeded your daily quota, try again tomorrow",
+        });
+        return res;
+      }
 
-    const kas_response = await getKnowledgeAreas(prompt);
-    var tokens_spent = kas_response.tokens_spent;
+      const kas_response = await getKnowledgeAreas(prompt);
+      var tokens_spent = kas_response.tokens_spent;
 
-    const kas = kas_response.response;
-    if (kas.length == 1 && kas[0] == knowledgeAreas.Unknown) {
-      res.json({
-        response:
-          "I couldn't understand what information I need to retrieve. Please redefine your question",
-      });
+      const kas = kas_response.response;
+      if (kas.length == 1 && kas[0] == knowledgeAreas.Unknown) {
+        res.json({
+          response:
+            "I couldn't understand what information I need to retrieve. Please redefine your question",
+        });
 
-      await saveStudentTokens(studentId, student_tokens, tokens_spent);
-      return res;
-    }
+        await saveStudentTokens(studentId, student_tokens, tokens_spent);
+        return res;
+      }
 
-    //This is a simplified version to build incrementally our context
-    //There are several better patterns than this one, but we didn't focus on it
-    let context = {};
-    for (let ka in kas) {
-      switch (kas[ka].trim()) {
-        case knowledgeAreas.Students:
-          const student_result = await getRecord(TABLES.STUDENTS, studentId);
+      //This is a simplified version to build incrementally our context
+      //There are several better patterns than this one, but we didn't focus on it
+      let context = {};
+      for (let ka in kas) {
+        switch (kas[ka].trim()) {
+          case knowledgeAreas.Students:
+            const student_result = await getRecord(TABLES.STUDENTS, studentId);
 
-          context.student_details = student_result.record.Item;
-          break;
+            context.student_details = student_result.record.Item;
+            break;
 
           case knowledgeAreas.Grades:
             const params = {
@@ -165,26 +179,29 @@ router.post("/prompt", async (req, res) => {
             break;
 
           case knowledgeAreas.StudentCourses:
-            const student_courses_result = await getRecord("StudentCourses", studentId);
+            const student_courses_result = await getRecord(
+              "StudentCourses",
+              studentId
+            );
             context.StudentCourses = student_courses_result.record.Item;
             break;
-            
 
-        default:
-          break;
+          default:
+            break;
+        }
       }
+
+      const prompt_response = await respondToPrompt(prompt, context);
+
+      tokens_spent += prompt_response.tokens_spent;
+      await saveStudentTokens(studentId, student_tokens, tokens_spent);
+
+      res.json({ response: prompt_response.response });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
     }
-
-    const prompt_response = await respondToPrompt(prompt, context);
-
-    tokens_spent += prompt_response.tokens_spent;
-    await saveStudentTokens(studentId, student_tokens, tokens_spent);
-
-    res.json({ response: prompt_response.response });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
   }
-});
+);
 
 async function saveStudentTokens(studentId, student_tokens, tokens_spent) {
   var st_to_update = student_tokens;
