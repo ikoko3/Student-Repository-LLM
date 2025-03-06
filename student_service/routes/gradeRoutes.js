@@ -4,6 +4,7 @@ const { v4: uuidv4 } = require("uuid");
 const {
   addRecord,
   getRecord,
+  getTable,
   getRecordsByQuery,
 } = require("../services/dynamoDBService");
 const { TABLES } = require("../constants");

@@ -3,7 +3,7 @@ const {
   authenticateToken,
   authorizeUser,
 } = require("../middleware/authMiddleware");
-const { addRecord, getRecord } = require("../services/dynamoDBService");
+const { addRecord, getRecord, getTable } = require("../services/dynamoDBService");
 const { TABLES } = require("../constants");
 
 const router = express.Router();

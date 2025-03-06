@@ -3,6 +3,7 @@ const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
 const {
   DynamoDBDocumentClient,
   PutCommand,
+  ScanCommand,
   GetCommand,
   QueryCommand,
   ScanCommand,
@@ -60,6 +61,24 @@ async function getRecord(tableName, id, idAttribute = "studentId") {
   } catch (error) {
     console.error("DynamoDB Error:", error);
     return { success: false, message: "Failed to get record" };
+  }
+}
+
+/**
+ * Get all items from a DynamoDB table
+ * @param {string} tableName - The table name
+ */
+async function getTable(tableName) {
+  try {
+    const command = new ScanCommand({
+      TableName: tableName,
+    });
+
+    const records = await dynamo.send(command);
+    return { success: true, records };
+  } catch (error) {
+    console.error("DynamoDB Error:", error);
+    return { success: false, message: "Failed to get table" };
   }
 }
 
@@ -156,6 +175,7 @@ async function getAmountSumBySortKey(tableName, indexName, date) {
 module.exports = {
   addRecord,
   getRecord,
+  getTable,
   getRecordsByQuery,
   getSTokensRecord,
   getTableItemCount,

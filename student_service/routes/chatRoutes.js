@@ -6,6 +6,7 @@ const {
 } = require("../services/openaiservice");
 const {
   getRecord,
+  getTable,
   getRecordsByQuery,
   getSTokensRecord,
   addRecord,
@@ -139,24 +140,36 @@ router.post("/prompt", async (req, res) => {
     //There are several better patterns than this one, but we didn't focus on it
     let context = {};
     for (let ka in kas) {
-      switch (kas[ka]) {
+      switch (kas[ka].trim()) {
         case knowledgeAreas.Students:
           const student_result = await getRecord(TABLES.STUDENTS, studentId);
 
           context.student_details = student_result.record.Item;
           break;
-        case knowledgeAreas.Grades:
-          const params = {
-            TableName: TABLES.GRADES,
-            KeyConditionExpression: "studentId = :studentId",
-            ExpressionAttributeValues: {
-              ":studentId": studentId,
-            },
-          };
 
-          const grades_result = await getRecordsByQuery(params);
-          context.grades = grades_result.records.Items;
-          break;
+          case knowledgeAreas.Grades:
+            const params = {
+              TableName: TABLES.GRADES,
+              KeyConditionExpression: "studentId = :studentId",
+              ExpressionAttributeValues: {
+                ":studentId": studentId,
+              },
+            };
+            const grades_result = await getRecordsByQuery(params);
+            context.grades = grades_result.records.Items;
+            break;
+
+          case knowledgeAreas.Courses:
+            const courses_result = await getTable("Courses");
+            context.courses = courses_result.records.Items;
+            break;
+
+          case knowledgeAreas.StudentCourses:
+            const student_courses_result = await getRecord("StudentCourses", studentId);
+            context.StudentCourses = student_courses_result.record.Item;
+            break;
+            
+
         default:
           break;
       }

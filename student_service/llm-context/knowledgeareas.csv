@@ -1,3 +1,30 @@
-#, Example Promt, Knowledge Area
-1, What are my student details?, Students
-2, What are my grades?, Grades
+#, Example Prompt, Knowledge Area
+1, What are my personal details?, Students
+2, What is my student ID?, Students
+3, Where can I find my contact information?, Students
+4, Can you show my full name?, Students
+5, Am I a full-time or part-time student?, Students
+6, What’s my email address on file?, Students
+7, What’s my current GPA?, Grades
+8, What are my grades for this semester?, Grades
+9, What’s my grade in _ course?, Grades
+10, How did I do in my _ class?, Grades
+11, What are my midterm exam results?, Grades
+12, Show me my final grades for all courses, Grades
+13, What’s the highest grade I’ve received?, Grades
+14, Did I pass _ ?, Grades
+15, What courses are gonna be offered?, Courses
+16, Can I see a list of all available courses?, Courses
+17, What’s the description of _?, Courses
+18, Who teaches the _ course?, Courses
+19, How many courses are offered?, Courses
+20, What courses am I currently enrolled in?, StudentCourses
+21, Which classes am I taking this semester?, StudentCourses
+22, Can you list my enrolled courses with their times?, StudentCourses
+23, Am I enrolled in Statistics 202?, StudentCourses
+24, Show me my enrollment history, StudentCourses
+25, What are my grades for all math courses?, Grades
+26, Did I get a good grade in any course?, Grades
+27, What’s the average grade in my enrolled courses?, Grades
+28, Can I drop a course I’m enrolled in?, StudentCourses
+29, What’s my total earned grades so far?, StudentCourses

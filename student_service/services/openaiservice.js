@@ -13,21 +13,29 @@ const knowledgeAreas = {
   Unknown: "Unknown",
   Students: "Students",
   Grades: "Grades",
+  Courses: "Courses",
+  StudentCourses: "StudentCourses"
 };
 
 async function getKnowledgeAreas(studentPrompt) {
   try {
     //MOCK Response
-    return {
-      response: "Grades,Students".split(","),
-      tokens_spent: 106,
-    };
+    // return {
+    //   response: "Grades,Students".split(","),
+    //   tokens_spent: 106,
+    // };
 
     const kas = fs.readFileSync(knowledgeAreasFile, "utf8");
 
     const prompt = `
-    Given the student's question '${studentPrompt}' and the CSV file with knowledge areas, match the question with the relevant knowledge areas. 
-    Return ONLY the values from the knowledge area column, and for questions that match multiple knowledge areas, return all the corresponding names in a comma-separated list.
+    You are an intelligent assistant designed to help students retrieve information about their university and grades. 
+    Your task is to analyze a student's input prompt and determine which knowledge areas (database tables) are relevant to answering it.
+    You will be provided with a list of example prompts and their corresponding knowledge areas from a CSV file. 
+    Based on this, match the student's input prompt to as many relevant knowledge areas as possible, even if it partially relates to multiple areas. 
+    Return a comma seperated list of matched knowledge areas, make sure the entries of the list are typed exactly how they're found in the CSV without spaces.
+    
+    Student Prompt: ${studentPrompt} 
+    Knolwdge Areas CSV:
     \`\`\` csv
     ${kas}
     \`\`\`
@@ -51,13 +59,33 @@ async function getKnowledgeAreas(studentPrompt) {
 
 async function respondToPrompt(studentPrompt, context) {
   try {
-    const prompt = `A student has asked:
-        '\\${studentPrompt}'\ 
-        Based on the following JSON with contains the student's information, return the answer to their question as if you are talking to the student without specifying the source of information.
-        If the question cannot be answered using the JSON, request more clarity.
+    const prompt = `
+        Assistant, you're helping students with their studies. 
+        You'll get a question and the context. 
+        Your job is to answer using only that context but not to let the student know that you have received any context.
+
+        Instructions:
+        0. IMPORTANT: Never indicate about how you retrieved the answer or mention JSON and Context.
+        1. Understand the question clearly.
+        2. Parse the JSON context to extract relevant information.
+        3. If needed, process or filter data step by step.
+        4. Formulate an accurate, helpful response based on the context.
+        5. Ensure your response is kind and covers all parts of the question.
+        6. Don't disclose sensitive information from the context.
+        7. Base your answer only on the provided context; no external knowledge or assumptions.
+        8. If the context lacks sufficient information, indicate that.
+        9. For complex questions, explain your reasoning.
+        10. Use appropriate formatting for clarity.
+        11. Be respectful in your language.
+
+        Question: '\\${studentPrompt}'\ 
+        Context:
         \`\`\`json
         ${JSON.stringify(context)}
-        \`\`\`}`;
+        \`\`\`
+        
+        Again do not mention anything about context and provided information, give a straightforward kind answer!
+        `;
 
     const response = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
