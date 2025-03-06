@@ -17,15 +17,12 @@ const {
   isFirstDayOfMonth,
   getFormattedDate,
 } = require("../dateUtils");
+const { TABLES, DYNAMO_DB_INDEXES } = require("../constants");
 
 const router = express.Router();
 
 module.exports = router;
-const dailyMaxTokens = 3500; // We will create the logic at a next step
-
-//We can set a cache for these value, instead of registering them simply as a variables.
-let existing_user_quota = null;
-let new_user_quota = null;
+let dailyMaxTokens = null;
 
 //This could have been a lambda function
 //We can set it up independently if time allows for it
@@ -33,7 +30,11 @@ router.post("/calculate_daily_tokens", async (req, res) => {
   try {
     const date = getFormattedDate();
 
-    const existing_result = await getRecord("DailyTokenQuotas", date, "date");
+    const existing_result = await getRecord(
+      TABLES.DAILYTOKENQUOTAS,
+      date,
+      "date"
+    );
 
     //This will prevent the same calculation from running more than once in a day
     if (existing_result.Item != null) {
@@ -47,13 +48,13 @@ router.post("/calculate_daily_tokens", async (req, res) => {
     } else {
       const yestrday = getFormattedDate(-1);
       const spent_tokens = await getAmountSumBySortKey(
-        "StudentTokens",
-        "Date-index",
+        TABLES.STUDENTTOKENS,
+        DYNAMO_DB_INDEXES.STUDENT_DATE_INDEX,
         yestrday
       );
 
       const yesterdays_quotas = await getRecord(
-        "DailyTokenQuotas",
+        TABLES.DAILYTOKENQUOTAS,
         yestrday,
         "date"
       );
@@ -64,28 +65,25 @@ router.post("/calculate_daily_tokens", async (req, res) => {
     }
 
     //Count users
-    const users = await getTableItemCount("Students");
+    const users = await getTableItemCount(TABLES.STUDENTS);
     const remaining_days_in_month = getRemainingDaysInMonth();
     const total_daily_tokens = remaining_tokens / remaining_days_in_month;
 
     //We reserve the 10% of the daily tokens for newly registered users
     //We consider that the maximum daily users can't be more than 10%
-    const existing_users_quota = (total_daily_tokens * 0.9) / users;
-    const new_users_quota = (total_daily_tokens * 0.1) / (users / 10);
+    const token_quota = total_daily_tokens / (users * 1.1);
 
     //Save record to the database
     var daily_quota = {
       date,
-      existing_users_quota,
-      new_users_quota,
+      token_quota,
       users_count: users,
       starting_tokens: remaining_tokens,
     };
 
-    const result = await addRecord("DailyTokenQuotas", daily_quota);
+    const result = await addRecord(TABLES.DAILYTOKENQUOTAS, daily_quota);
 
-    existing_user_quota = existing_users_quota;
-    new_user_quota = new_users_quota;
+    dailyMaxTokens = token_quota;
 
     res.json();
   } catch (error) {
@@ -101,7 +99,7 @@ router.get("/available_tokens/:id", async (req, res) => {
     const student_tokens = await getStudentTokens(studentId);
     if (student_tokens != undefined) spent_tokens = student_tokens.tokens_spent;
 
-    res.json(dailyMaxTokens - spent_tokens);
+    res.json((await getdailyQuota()) - spent_tokens);
   } catch (error) {
     res.status(500).json({ error: "Failed to get student record" });
   }
@@ -115,7 +113,7 @@ router.post("/prompt", async (req, res) => {
 
     if (
       student_tokens != undefined &&
-      student_tokens.tokens_spent >= dailyMaxTokens
+      student_tokens.tokens_spent >= (await getdailyQuota())
     ) {
       res.json({
         response: "You have exceeded your daily quota, try again tomorrow",
@@ -143,13 +141,13 @@ router.post("/prompt", async (req, res) => {
     for (let ka in kas) {
       switch (kas[ka]) {
         case knowledgeAreas.Students:
-          const student_result = await getRecord("Students", studentId);
+          const student_result = await getRecord(TABLES.STUDENTS, studentId);
 
           context.student_details = student_result.record.Item;
           break;
         case knowledgeAreas.Grades:
           const params = {
-            TableName: "StudentGrades", //These constants should be moved to a centralized place
+            TableName: TABLES.GRADES,
             KeyConditionExpression: "studentId = :studentId",
             ExpressionAttributeValues: {
               ":studentId": studentId,
@@ -187,23 +185,25 @@ async function saveStudentTokens(studentId, student_tokens, tokens_spent) {
     st_to_update.tokens_spent += tokens_spent;
   }
 
-  const result = await addRecord("StudentTokens", st_to_update);
+  const result = await addRecord(TABLES.STUDENTTOKENS, st_to_update);
 }
 
 async function getStudentTokens(studentId) {
   return await getSTokensRecord(
-    "StudentTokens", // Create constant
+    TABLES.STUDENTTOKENS,
     studentId,
     getFormattedDate()
   );
 }
 
-async function getDailyMaxTokens(studentId) {
-  //TODO: Write a function that detects if the user was registered today
-  //Use the correct variable based on the type of the user
-}
+async function getdailyQuota() {
+  if (dailyMaxTokens != null) return dailyMaxTokens;
 
-//This should be used to reset the in memory values
-async function resetDailyQuotas(studentId) {
-  //TODO: This function shuold read from the db the daily quotas and set the local variables
+  const daily_quotas = await getRecord(
+    TABLES.DAILYTOKENQUOTAS,
+    getFormattedDate(),
+    "date"
+  );
+  dailyMaxTokens = daily_quotas.record.Item.token_quota;
+  return dailyMaxTokens;
 }

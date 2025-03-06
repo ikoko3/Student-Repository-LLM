@@ -6,10 +6,9 @@ const {
   getRecord,
   getRecordsByQuery,
 } = require("../services/dynamoDBService");
+const { TABLES } = require("../constants");
 
 const router = express.Router();
-const TABLE_NAME = "StudentGrades"; // Change this to your actual table name
-
 module.exports = router;
 
 router.post("/upsert", async (req, res) => {
@@ -25,8 +24,8 @@ router.post("/upsert", async (req, res) => {
       timestamp: new Date().toISOString(),
     };
 
-    const result = await addRecord(TABLE_NAME, grade);
-    
+    const result = await addRecord(TABLES.GRADES, grade);
+
     res.json(result.record);
   } catch (error) {
     res.status(500).json({ error: "Failed to add student grades" });
@@ -38,7 +37,7 @@ router.get("/student/:studentId", async (req, res) => {
     const studentId = req.params.studentId;
 
     const params = {
-      TableName: TABLE_NAME,
+      TableName: TABLES.GRADES,
       KeyConditionExpression: "studentId = :studentId",
       ExpressionAttributeValues: {
         ":studentId": studentId,
