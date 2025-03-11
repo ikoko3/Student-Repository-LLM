@@ -33,6 +33,7 @@ async function getKnowledgeAreas(studentPrompt) {
     You will be provided with a list of example prompts and their corresponding knowledge areas from a CSV file. 
     Based on this, match the student's input prompt to as many relevant knowledge areas as possible, even if it partially relates to multiple areas. 
     Return a comma seperated list of matched knowledge areas, make sure the entries of the list are typed exactly how they're found in the CSV without spaces.
+    When the question contains a grade make sure to include the 'Courses' knowledge area in your response list.
     
     Student Prompt: ${studentPrompt} 
     Knolwdge Areas CSV:
@@ -77,6 +78,7 @@ async function respondToPrompt(studentPrompt, context) {
         9. For complex questions, explain your reasoning.
         10. Use appropriate formatting for clarity.
         11. Be respectful in your language.
+        12. When a course Id is mentioned, provide the course name.
 
         Question: '\\${studentPrompt}'\ 
         Context:
