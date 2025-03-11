@@ -17,14 +17,15 @@
 16, Can I see a list of all available courses?, Courses
 17, What’s the description of _?, Courses
 18, Who teaches the _ course?, Courses
-19, How many courses are offered?, Courses
-20, What courses am I currently enrolled in?, StudentCourses
-21, Which classes am I taking this semester?, StudentCourses
-22, Can you list my enrolled courses with their times?, StudentCourses
-23, Am I enrolled in Statistics 202?, StudentCourses
-24, Show me my enrollment history, StudentCourses
-25, What are my grades for all math courses?, Grades
-26, Did I get a good grade in any course?, Grades
-27, What’s the average grade in my enrolled courses?, Grades
-28, Can I drop a course I’m enrolled in?, StudentCourses
-29, What’s my total earned grades so far?, StudentCourses
+19, Who are the teachers and TAs of course _?, Courses
+20, How many courses are offered?, Courses
+21, What courses am I currently enrolled in?, StudentCourses
+22, Which classes am I taking this semester?, StudentCourses
+23, Can you list my enrolled courses with their times?, StudentCourses
+24, Am I enrolled in Statistics 202?, StudentCourses
+25, Show me my enrollment history, StudentCourses
+26, What are my grades for all math courses?, Grades
+27, Did I get a good grade in any course?, Grades
+28, What’s the average grade in my enrolled courses?, Grades
+29, Can I drop a course I’m enrolled in?, StudentCourses
+30, What’s my total earned grades so far?, StudentCourses
