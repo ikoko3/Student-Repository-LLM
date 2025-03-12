@@ -163,7 +163,7 @@ router.post(
           case knowledgeAreas.Students:
             const student_result = await getRecord(TABLES.STUDENTS, studentId);
 
-            context.student_details = student_result.record.Item;
+            context.student_details = student_result.record?.Item;
             break;
 
           case knowledgeAreas.Grades:
@@ -175,20 +175,28 @@ router.post(
               },
             };
             const grades_result = await getRecordsByQuery(params);
-            context.grades = grades_result.records.Items;
+            context.grades = grades_result.records?.Items;
             break;
 
           case knowledgeAreas.Courses:
-            const courses_result = await getTable("Courses");
-            context.courses = courses_result.records.Items;
+            const courses_result = await getTable(TABLES.COURSES);
+            context.program_courses = courses_result.records?.Items;
             break;
 
           case knowledgeAreas.StudentCourses:
-            const student_courses_result = await getRecord(
-              "StudentCourses",
-              studentId
+            const student_courses_params = {
+              TableName: TABLES.STUDENTCOURSES,
+              KeyConditionExpression: "studentId = :studentId",
+              ExpressionAttributeValues: {
+                ":studentId": studentId,
+              },
+            };
+
+            const student_courses_result = await getRecordsByQuery(
+              student_courses_params
             );
-            context.StudentCourses = student_courses_result.record.Item;
+
+            context.StudentCourses = student_courses_result.records?.Items;
             break;
 
           default:

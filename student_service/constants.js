@@ -5,6 +5,8 @@ const TABLES = {
   GRADES: "StudentGrades",
   DAILYTOKENQUOTAS: "DailyTokenQuotas",
   STUDENTTOKENS: "StudentTokens",
+  STUDENTCOURSES: "StudentCourses",
+  COURSES: "Courses",
 };
 
 const DYNAMO_DB_INDEXES = {
@@ -19,5 +21,5 @@ const GPT_OPTIONS = {
 module.exports = {
   TABLES,
   DYNAMO_DB_INDEXES,
-  GPT_OPTIONS
+  GPT_OPTIONS,
 };
