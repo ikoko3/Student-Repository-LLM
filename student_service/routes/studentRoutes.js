@@ -45,11 +45,37 @@ router.get(
   async (req, res) => {
     try {
       const id = req.params.id;
-
+      
       const result = await getRecord(TABLES.STUDENTS, id);
       res.json(result.record.Item);
     } catch (error) {
       res.status(500).json({ error: "Failed to get student record" });
+    }
+  }
+);
+
+
+router.post(
+  "/initUser",
+  async (req, res) => {
+    try {
+      const { userId } = req.body;
+
+      if (!userId) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      const student = {
+        userId: userId
+      };
+
+      console.log("TEST ------------------------------------------------------------------!!!!!!!!!!!!!!!!!!!!!");
+      console.log("student", student);
+
+      // const result = await addRecord(TABLES.STUDENTS, student);
+      res.json(result.record);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to add student record" });
     }
   }
 );
