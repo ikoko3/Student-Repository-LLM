@@ -77,7 +77,7 @@ router.post(
 async function initializRandomUserData(userId)
 {
   try {
-    for (let index = 0; index < 5; index++) 
+    for (let index = 0; index < 10; index++) 
     {
       var studentCourseEntry;
       var studentGradeEntry;
