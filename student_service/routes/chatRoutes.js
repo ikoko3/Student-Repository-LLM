@@ -118,8 +118,8 @@ router.get(
 
 router.post(
   "/prompt",
-  //authenticateToken,
-  //authorizeUser(["studentId"]),
+  authenticateToken,
+  authorizeUser(["studentId"]),
   async (req, res) => {
     try {
       const { prompt, studentId, previousMessages } = req.body;
