@@ -3,6 +3,7 @@
 const TABLES = {
   STUDENTS: "Students",
   GRADES: "StudentGrades",
+  STUDENT_COURSES: "StudentCourses",
   DAILYTOKENQUOTAS: "DailyTokenQuotas",
   STUDENTTOKENS: "StudentTokens",
 };

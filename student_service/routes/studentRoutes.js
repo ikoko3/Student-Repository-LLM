@@ -69,13 +69,28 @@ router.post(
         userId: userId
       };
 
-      console.log("TEST ------------------------------------------------------------------!!!!!!!!!!!!!!!!!!!!!");
-      console.log("student", student);
-
-      // const result = await addRecord(TABLES.STUDENTS, student);
+      const result = await addRecord(TABLES.STUDENTS, student);
       res.json(result.record);
     } catch (error) {
       res.status(500).json({ error: "Failed to add student record" });
     }
   }
 );
+
+async function initUser(studentId) {
+
+  const studentEntry1 = {
+    studentId: studentId,
+    courseID: "C001",
+    status: "ongoing"
+  };
+  const res1 = await addRecord(TABLES.STUDENT_COURSES, studentEntry1);
+  
+  const studentEntry2 = {
+    studentId: studentId,
+    courseID: "C006",
+    status: "passed"
+  };
+  const res2 = await addRecord(TABLES.STUDENT_COURSES, studentEntry2);
+
+}
