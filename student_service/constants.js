@@ -14,6 +14,7 @@ const DYNAMO_DB_INDEXES = {
 module.exports = {
   TABLES,
   DYNAMO_DB_INDEXES,
+  GPT_OPTIONS,
 };
 
 const GPT_OPTIONS = {
