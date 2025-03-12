@@ -6,6 +6,8 @@ const TABLES = {
   STUDENT_COURSES: "StudentCourses",
   DAILYTOKENQUOTAS: "DailyTokenQuotas",
   STUDENTTOKENS: "StudentTokens",
+  STUDENTCOURSES: "StudentCourses",
+  COURSES: "Courses",
 };
 
 const DYNAMO_DB_INDEXES = {
@@ -13,12 +15,15 @@ const DYNAMO_DB_INDEXES = {
 };
 
 const GPT_OPTIONS = {
-  model: "gpt-3.5-turbo",
+  //gpt-4o
+  //gpt-4-turbo
+  //Cheapest: gpt-3.5-turbo
+  model: "gpt-4o",
   max_tokens: 400,
 };
 
 module.exports = {
   TABLES,
   DYNAMO_DB_INDEXES,
-  GPT_OPTIONS
+  GPT_OPTIONS,
 };
