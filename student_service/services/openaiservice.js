@@ -1,4 +1,5 @@
 require("dotenv").config();
+
 const { OpenAI } = require("openai");
 const fs = require("fs");
 const path = require("path");
@@ -16,6 +17,7 @@ const knowledgeAreas = {
   Courses: "Courses",
   StudentCourses: "StudentCourses"
 };
+const { GPT_OPTIONS } = require("../constants");
 
 async function getKnowledgeAreas(studentPrompt) {
   try {
@@ -43,9 +45,9 @@ async function getKnowledgeAreas(studentPrompt) {
     `;
 
     const response = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
+      model: GPT_OPTIONS.model,
       messages: [{ role: "user", content: prompt }],
-      max_tokens: 250,
+      max_tokens: GPT_OPTIONS.max_tokens
     });
 
     return {
@@ -90,9 +92,9 @@ async function respondToPrompt(studentPrompt, context) {
         `;
 
     const response = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
+      model: GPT_OPTIONS.model,
       messages: [{ role: "user", content: prompt }],
-      max_tokens: 50,
+      max_tokens: GPT_OPTIONS.max_tokens
     });
 
     return {

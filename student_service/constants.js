@@ -15,3 +15,9 @@ module.exports = {
   TABLES,
   DYNAMO_DB_INDEXES,
 };
+
+const GPT_OPTIONS = {
+  model: "gpt-3.5-turbo",
+  max_tokens: 400,
+};
+} 
