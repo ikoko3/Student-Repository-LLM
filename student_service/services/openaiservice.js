@@ -15,18 +15,12 @@ const knowledgeAreas = {
   Students: "Students",
   Grades: "Grades",
   Courses: "Courses",
-  StudentCourses: "StudentCourses"
+  StudentCourses: "StudentCourses",
 };
 const { GPT_OPTIONS } = require("../constants");
 
-async function getKnowledgeAreas(studentPrompt) {
+async function getKnowledgeAreas(studentPrompt, chatHistory) {
   try {
-    //MOCK Response
-    // return {
-    //   response: "Grades,Students".split(","),
-    //   tokens_spent: 106,
-    // };
-
     const kas = fs.readFileSync(knowledgeAreasFile, "utf8");
 
     const prompt = `
@@ -38,6 +32,7 @@ async function getKnowledgeAreas(studentPrompt) {
     When the question contains a grade make sure to include the 'Courses' knowledge area in your response list.
     
     Student Prompt: ${studentPrompt} 
+    Chat History: ${chatHistory}
     Knolwdge Areas CSV:
     \`\`\` csv
     ${kas}
@@ -47,7 +42,7 @@ async function getKnowledgeAreas(studentPrompt) {
     const response = await openai.chat.completions.create({
       model: GPT_OPTIONS.model,
       messages: [{ role: "user", content: prompt }],
-      max_tokens: GPT_OPTIONS.max_tokens
+      max_tokens: GPT_OPTIONS.max_tokens,
     });
 
     return {
@@ -94,7 +89,7 @@ async function respondToPrompt(studentPrompt, context) {
     const response = await openai.chat.completions.create({
       model: GPT_OPTIONS.model,
       messages: [{ role: "user", content: prompt }],
-      max_tokens: GPT_OPTIONS.max_tokens
+      max_tokens: GPT_OPTIONS.max_tokens,
     });
 
     return {

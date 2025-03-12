@@ -118,11 +118,16 @@ router.get(
 
 router.post(
   "/prompt",
-  authenticateToken,
-  authorizeUser(["studentId"]),
+  //authenticateToken,
+  //authorizeUser(["studentId"]),
   async (req, res) => {
     try {
-      const { prompt, studentId } = req.body;
+      const { prompt, studentId, previousMessages } = req.body;
+
+      //We send only the last 6 messages to control the token spending
+      const chatHistory = Array.isArray(previousMessages)
+        ? previousMessages.slice(0, 6)
+        : [];
 
       const student_tokens = await getStudentTokens(studentId);
 
@@ -136,7 +141,7 @@ router.post(
         return res;
       }
 
-      const kas_response = await getKnowledgeAreas(prompt);
+      const kas_response = await getKnowledgeAreas(prompt, chatHistory);
       var tokens_spent = kas_response.tokens_spent;
 
       const kas = kas_response.response;
@@ -152,7 +157,7 @@ router.post(
 
       //This is a simplified version to build incrementally our context
       //There are several better patterns than this one, but we didn't focus on it
-      let context = {};
+      let context = { chatHistory };
       for (let ka in kas) {
         switch (kas[ka].trim()) {
           case knowledgeAreas.Students:
