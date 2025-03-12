@@ -1,4 +1,5 @@
 require("dotenv").config();
+
 const { OpenAI } = require("openai");
 const fs = require("fs");
 const path = require("path");
@@ -16,6 +17,7 @@ const knowledgeAreas = {
   Courses: "Courses",
   StudentCourses: "StudentCourses"
 };
+const { GPT_OPTIONS } = require("../constants");
 
 async function getKnowledgeAreas(studentPrompt) {
   try {
@@ -33,6 +35,7 @@ async function getKnowledgeAreas(studentPrompt) {
     You will be provided with a list of example prompts and their corresponding knowledge areas from a CSV file. 
     Based on this, match the student's input prompt to as many relevant knowledge areas as possible, even if it partially relates to multiple areas. 
     Return a comma seperated list of matched knowledge areas, make sure the entries of the list are typed exactly how they're found in the CSV without spaces.
+    When the question contains a grade make sure to include the 'Courses' knowledge area in your response list.
     
     Student Prompt: ${studentPrompt} 
     Knolwdge Areas CSV:
@@ -42,9 +45,9 @@ async function getKnowledgeAreas(studentPrompt) {
     `;
 
     const response = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
+      model: GPT_OPTIONS.model,
       messages: [{ role: "user", content: prompt }],
-      max_tokens: 250,
+      max_tokens: GPT_OPTIONS.max_tokens
     });
 
     return {
@@ -77,6 +80,7 @@ async function respondToPrompt(studentPrompt, context) {
         9. For complex questions, explain your reasoning.
         10. Use appropriate formatting for clarity.
         11. Be respectful in your language.
+        12. When a course Id is mentioned, provide the course name.
 
         Question: '\\${studentPrompt}'\ 
         Context:
@@ -88,9 +92,9 @@ async function respondToPrompt(studentPrompt, context) {
         `;
 
     const response = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
+      model: GPT_OPTIONS.model,
       messages: [{ role: "user", content: prompt }],
-      max_tokens: 50,
+      max_tokens: GPT_OPTIONS.max_tokens
     });
 
     return {
