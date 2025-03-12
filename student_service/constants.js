@@ -15,7 +15,10 @@ const DYNAMO_DB_INDEXES = {
 };
 
 const GPT_OPTIONS = {
-  model: "gpt-3.5-turbo",
+  //gpt-4o
+  //gpt-4-turbo
+  //Cheapest: gpt-3.5-turbo
+  model: "gpt-4o",
   max_tokens: 400,
 };
 
