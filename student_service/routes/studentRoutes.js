@@ -65,32 +65,17 @@ router.post(
         return res.status(400).json({ error: "Missing required fields" });
       }
 
-      const student = {
-        userId: userId
+      const studentEntry2 = {
+        studentId: studentId,
+        courseID: "C006",
+        status: "passed"
       };
-
-      const result = await addRecord(TABLES.STUDENTS, student);
+      
+      const result = await addRecord(TABLES.STUDENT_COURSES, studentEntry2);
+    
       res.json(result.record);
     } catch (error) {
       res.status(500).json({ error: "Failed to add student record" });
     }
   }
 );
-
-async function initUser(studentId) {
-
-  const studentEntry1 = {
-    studentId: studentId,
-    courseID: "C001",
-    status: "ongoing"
-  };
-  const res1 = await addRecord(TABLES.STUDENT_COURSES, studentEntry1);
-  
-  const studentEntry2 = {
-    studentId: studentId,
-    courseID: "C006",
-    status: "passed"
-  };
-  const res2 = await addRecord(TABLES.STUDENT_COURSES, studentEntry2);
-
-}
