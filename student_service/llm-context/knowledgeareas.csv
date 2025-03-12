@@ -30,3 +30,6 @@
 29, Can I drop a course I’m enrolled in?, StudentCourses
 30, What’s my total earned grades so far?, StudentCourses
 31, What are the prerequisites of course _?, Courses
+32, What are my current courses?, StudentCourses
+33, What are my passed courses?, StudentCourses
+34, What are my past courses?, StudentCourses
