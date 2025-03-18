@@ -52,7 +52,9 @@ async function authenticateToken(req, res, next) {
 
 function authorizeUser(validKeys = ["id", "studentId", "userId"]) {
   return (req, res, next) => {
-    const userId = req.user?.["cognito:username"];
+    let userId = req.user?.["cognito:username"];
+    //This is not a good practise...
+    if (userId.includes("google")) userId = req.user?.sub;
 
     // Look for the correct ID in params, query, or body
     let paramId = null;
