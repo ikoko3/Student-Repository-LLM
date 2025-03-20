@@ -87,12 +87,12 @@ async function initializRandomUserData(userId) {
       if (!studentCourseEntry) continue; // Skip if no course was assigned (shouldn't happen)
 
       assignedCourses.add(studentCourseEntry.courseId);
-      // await addRecord(TABLES.STUDENT_COURSES, studentCourseEntry);
+      await addRecord(TABLES.STUDENT_COURSES, studentCourseEntry);
 
       // Generate grades based on course status
       const studentGrades = generateStudentGrades(userId, studentCourseEntry.courseId, studentCourseEntry.status);
       for (let gradeEntry of studentGrades) {
-        // await addRecord(TABLES.GRADES, gradeEntry);
+        await addRecord(TABLES.GRADES, gradeEntry);
       }
     }
 
