@@ -74,14 +74,23 @@ router.post("/initUser", async (req, res) => {
   }
 });
 
-async function initializRandomUserData(userId) {
+async function initializeRandomUserData(userId) {
   try {
-    for (let index = 0; index < 10; index++) {
-      var studentCourseEntry = generateRandomStudentCourseEntry(userId);
+    const assignedCourses = new Set(); // Track assigned courses to prevent duplicates
+    const availableCourses = ["C001", "C002", "C003", "C004", "C005",
+                              "C006", "C007", "C008", "C009", "C010", 
+                              "C011", "C012", "C013", "C014", "C015", 
+                              "C016", "C017", "C018", "C019", "C020"];
+
+    while (assignedCourses.size < 10) {
+      const studentCourseEntry = generateRandomStudentCourseEntry(userId, availableCourses, assignedCourses);
+      if (!studentCourseEntry) continue; // Skip if no course was assigned (shouldn't happen)
+
+      assignedCourses.add(studentCourseEntry.courseId);
       await addRecord(TABLES.STUDENT_COURSES, studentCourseEntry);
 
       // Generate grades based on course status
-      let studentGrades = generateStudentGrades(userId, studentCourseEntry.courseId, studentCourseEntry.status);
+      const studentGrades = generateStudentGrades(userId, studentCourseEntry.courseId, studentCourseEntry.status);
       for (let gradeEntry of studentGrades) {
         await addRecord(TABLES.GRADES, gradeEntry);
       }
@@ -93,18 +102,19 @@ async function initializRandomUserData(userId) {
   }
 }
 
-function generateRandomStudentCourseEntry(userId) {
-  const courseIds = ["C001", "C002", "C003", "C004", "C005",
-                     "C006", "C007", "C008", "C009", "C010",
-                     "C011", "C012", "C013", "C014", "C015", 
-                     "C016", "C017", "C018", "C019", "C020"];
-
+function generateRandomStudentCourseEntry(userId, availableCourses, assignedCourses) {
   const statuses = ["ongoing", "passed", "failed"];
+  const remainingCourses = availableCourses.filter(courseId => !assignedCourses.has(courseId));
+
+  if (remainingCourses.length === 0) return null; // No more unique courses available
+
+  const randomCourseId = remainingCourses[Math.floor(Math.random() * remainingCourses.length)];
+  const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
 
   return {
     studentId: userId,
-    courseId: courseIds[Math.floor(Math.random() * courseIds.length)],
-    status: statuses[Math.floor(Math.random() * statuses.length)],
+    courseId: randomCourseId,
+    status: randomStatus,
   };
 }
 
