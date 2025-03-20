@@ -74,7 +74,7 @@ router.post("/initUser", async (req, res) => {
   }
 });
 
-async function initializeRandomUserData(userId) {
+async function initializRandomUserData(userId) {
   try {
     const assignedCourses = new Set(); // Track assigned courses to prevent duplicates
     const availableCourses = ["C001", "C002", "C003", "C004", "C005",
@@ -87,12 +87,12 @@ async function initializeRandomUserData(userId) {
       if (!studentCourseEntry) continue; // Skip if no course was assigned (shouldn't happen)
 
       assignedCourses.add(studentCourseEntry.courseId);
-      await addRecord(TABLES.STUDENT_COURSES, studentCourseEntry);
+      // await addRecord(TABLES.STUDENT_COURSES, studentCourseEntry);
 
       // Generate grades based on course status
       const studentGrades = generateStudentGrades(userId, studentCourseEntry.courseId, studentCourseEntry.status);
       for (let gradeEntry of studentGrades) {
-        await addRecord(TABLES.GRADES, gradeEntry);
+        // await addRecord(TABLES.GRADES, gradeEntry);
       }
     }
 
