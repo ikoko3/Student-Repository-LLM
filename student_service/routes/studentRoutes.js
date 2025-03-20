@@ -77,20 +77,13 @@ router.post("/initUser", async (req, res) => {
 async function initializRandomUserData(userId) {
   try {
     for (let index = 0; index < 10; index++) {
-      var studentCourseEntry;
-      var studentGradeEntry;
+      var studentCourseEntry = generateRandomStudentCourseEntry(userId);
+      await addRecord(TABLES.STUDENT_COURSES, studentCourseEntry);
 
-      studentCourseEntry = generateRandomStudentCourseEntry(userId);
-      const courseRes = await addRecord(
-        TABLES.STUDENT_COURSES,
-        studentCourseEntry
-      );
-      if (studentCourseEntry.status === "passed") {
-        studentGradeEntry = generateStudentGradeEntryGradeEntry(
-          userId,
-          studentCourseEntry.courseId
-        );
-        const gradeRes = await addRecord(TABLES.GRADES, studentGradeEntry);
+      // Generate grades based on course status
+      let studentGrades = generateStudentGrades(userId, studentCourseEntry.courseId, studentCourseEntry.status);
+      for (let gradeEntry of studentGrades) {
+        await addRecord(TABLES.GRADES, gradeEntry);
       }
     }
 
@@ -101,37 +94,41 @@ async function initializRandomUserData(userId) {
 }
 
 function generateRandomStudentCourseEntry(userId) {
-  const courseIds = ["C001", "C002", "C003", "C004", "C005", "C006"];
-  const statuses = ["ongoing", "passed", "failed"];
+  const courseIds = ["C001", "C002", "C003", "C004", "C005",
+                     "C006", "C007", "C008", "C009", "C010",
+                     "C011", "C012", "C013", "C014", "C015", 
+                     "C016", "C017", "C018", "C019", "C020"];
 
-  const randomCourseId =
-    courseIds[Math.floor(Math.random() * courseIds.length)];
-  const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
+  const statuses = ["ongoing", "passed", "failed"];
 
   return {
     studentId: userId,
-    courseId: randomCourseId,
-    status: randomStatus,
+    courseId: courseIds[Math.floor(Math.random() * courseIds.length)],
+    status: statuses[Math.floor(Math.random() * statuses.length)],
   };
 }
 
-function generateStudentGradeEntryGradeEntry(studentId, courseId) {
-  const gradeId = "G-" + generateRandomHex(4);
-  const gradeDescriptions = ["midterm", "final", "assignment", "quiz"];
-  const courseGrade = Math.floor(Math.random() * 5) + 6;
-
-  const randomGradeDescription =
-    gradeDescriptions[Math.floor(Math.random() * gradeDescriptions.length)];
-  const timestamp = new Date().toISOString(); // Generate current timestamp
-
-  return {
-    studentId: studentId,
-    gradeId: gradeId,
-    courseGrade: courseGrade,
-    courseId: courseId,
-    gradeDescription: randomGradeDescription,
-    timestamp: timestamp,
+function generateStudentGrades(studentId, courseId, status) {
+  const gradeDescriptions = {
+    failed: ["midterm", "final", "assignment", "quiz"],
+    passed: ["midterm", "final", "assignment", "quiz"],
+    ongoing: ["assignment", "quiz"],
   };
+
+  return gradeDescriptions[status].map((description) => ({
+    studentId,
+    courseId,
+    gradeId: "G-" + generateRandomHex(4),
+    gradeDescription: description,
+    courseGrade: generateGrade(status),
+    timestamp: new Date().toISOString(),
+  }));
+}
+
+function generateGrade(status) {
+  if (status === "failed") return Math.floor(Math.random() * 6);
+  if (status === "passed") return Math.floor(Math.random() * 5) + 6;
+  return Math.floor(Math.random() * (11));; // Ongoing
 }
 
 function generateRandomHex(length) {
