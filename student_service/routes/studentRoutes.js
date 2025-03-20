@@ -87,10 +87,20 @@ async function initializRandomUserData(userId) {
       if (!studentCourseEntry) continue; // Skip if no course was assigned (shouldn't happen)
 
       assignedCourses.add(studentCourseEntry.courseId);
-      await addRecord(TABLES.STUDENT_COURSES, studentCourseEntry);
 
       // Generate grades based on course status
       const studentGrades = generateStudentGrades(userId, studentCourseEntry.courseId, studentCourseEntry.status);
+
+      // If passed, calculate final grade; otherwise, set to '-'
+      if (studentCourseEntry.status === "passed") {
+        const finalGrade = calculateFinalGrade(studentGrades);
+        studentCourseEntry.finalGrade = finalGrade;
+      } else {
+        studentCourseEntry.finalGrade = "-";
+      }
+
+      await addRecord(TABLES.STUDENT_COURSES, studentCourseEntry);
+
       for (let gradeEntry of studentGrades) {
         await addRecord(TABLES.GRADES, gradeEntry);
       }
@@ -139,6 +149,11 @@ function generateGrade(status) {
   if (status === "failed") return Math.floor(Math.random() * 6);
   if (status === "passed") return Math.floor(Math.random() * 5) + 6;
   return Math.floor(Math.random() * (11));; // Ongoing
+}
+
+function calculateFinalGrade(grades) {
+  const total = grades.reduce((sum, grade) => sum + grade.courseGrade, 0);
+  return (total / grades.length).toFixed(2);
 }
 
 function generateRandomHex(length) {
